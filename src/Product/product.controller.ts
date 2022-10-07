@@ -42,8 +42,10 @@ export class ProductController {
   async addProduct(
     @UploadedFile() file: Express.Multer.File,
     @Body() createProductDTO: CreateProductDTO
-  ): Promise<Product> {
-    return await this.productService.addProduct(createProductDTO, file);
+  ): Promise<{data : Product}> {
+    return {
+      data : await this.productService.addProduct(createProductDTO, file),
+    }
   }
 
   @Get('/:id')

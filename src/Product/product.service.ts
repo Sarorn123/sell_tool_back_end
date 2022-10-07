@@ -1,5 +1,5 @@
 import { Category } from './../../node_modules/.prisma/client/index.d';
-import {  HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Product } from '@prisma/client';
 import { PrismaService } from '../Prisma/prisma.service';
 import { CreateProductDTO, createCategoryDTO, UpdateProductDTO } from './product.dto';
@@ -131,6 +131,10 @@ export class ProductService {
       throw new HttpException(`Product Already Existed !`, HttpStatus.BAD_REQUEST);
     }
 
+    if (!file) {
+      throw new HttpException(`Image Is Required !`, HttpStatus.BAD_REQUEST);
+    }
+
     const validateImage = this.imageUploadService.validateImage(file);
     if (!validateImage.accept) {
       throw new HttpException(validateImage.message, HttpStatus.BAD_REQUEST);
@@ -144,10 +148,16 @@ export class ProductService {
     );
 
     const newCreateProductDTO = { ...createProductDTO, image_url: path, categoryId: Number(createProductDTO.categoryId) };
-    const newProduct = await this.prisma.product.create({
+    const { id } = await this.prisma.product.create({
       data: newCreateProductDTO,
     });
 
+    const newProduct = await this.prisma.product.findUnique({
+      where: { id },
+      include: {
+        category: true
+      }
+    });
     const image_url = this.imageUploadService.getImageUrl(path);
     return { ...newProduct, image_url }
   }
@@ -203,7 +213,7 @@ export class ProductService {
       }
 
       // Delete Image First 
-      await this.imageUploadService.deleteImage(exist.image_url);
+      await this.imageUploadService.deleteImage(exist.image_url); 
       // Save Image To Google Cloud 
       const image_name = uuid();
       const path: string = await this.imageUploadService.saveImage(
@@ -213,12 +223,20 @@ export class ProductService {
       updateProductDTO = { ...updateProductDTO, image_url: path }
     }
     updateProductDTO = { ...updateProductDTO, categoryId: Number(updateProductDTO.categoryId) };
-    const updatedProduct = await this.prisma.product.update({
+    await this.prisma.product.update({
       where: {
         id: id
       },
       data: updateProductDTO
     });
+
+    const updatedProduct = await this.prisma.product.findUnique({
+      where: { id },
+      include: {
+        category: true
+      }
+    });
+
     const image_url = this.imageUploadService.getImageUrl(updatedProduct.image_url);
     return { ...updatedProduct, image_url }
   }
