@@ -1,14 +1,17 @@
-import { Product } from '@prisma/client';
-import { Controller, Get, Post } from '@nestjs/common';
-import { Body, Delete, Param, Put, Query } from '@nestjs/common/decorators';
+import { Category, Product } from '@prisma/client';
+import { Controller, Get, Post, } from '@nestjs/common';
+import { Body, Delete, Param, Put, Query, UploadedFile, UseInterceptors } from '@nestjs/common/decorators';
 import { CreateProductDTO, createCategoryDTO, UpdateProductDTO } from './product.dto';
 import { ProductService } from './product.service';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller({
   path: "/product"
 })
 export class ProductController {
-  constructor(private readonly productService: ProductService) { }
+  constructor(
+    private readonly productService: ProductService,
+  ) { }
 
   // ====> Category <==== //
 
@@ -18,38 +21,53 @@ export class ProductController {
   }
 
   @Get("/getAllCategory")
-  async getAllCategory() {
-    return await this.productService.getAllCategory();
+  async getAllCategory(): Promise<{ data: Category[] }> {
+    return {
+      data: await this.productService.getAllCategory()
+    }
   }
-
 
   // ====> End Category <==== //
 
   @Get()
-  async getAllProducts(@Query() query: any): Promise<{ data : Product[] }> {
+  async getAllProducts(@Query() query: any): Promise<{ data: Product[] }> {
 
     return {
-      data : await this.productService.getAllProducts(query),
+      data: await this.productService.getAllProducts(query),
     }
   }
 
   @Post()
-  async addProduct(@Body() createProductDTO: CreateProductDTO) {
-    return await this.productService.addProduct(createProductDTO);
+  @UseInterceptors(FileInterceptor('image'))
+  async addProduct(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() createProductDTO: CreateProductDTO
+  ): Promise<Product> {
+    return await this.productService.addProduct(createProductDTO, file);
   }
 
   @Get('/:id')
-  async getProduct(@Param('id') id: number) {
-    return await this.productService.getProduct(id);
+  async getProduct(@Param('id') id: number): Promise<{ data: Product }> {
+    return {
+      data: await this.productService.getProduct(Number(id))
+    }
   }
 
   @Put('/:id')
-  async updateProduct(@Param('id') id: number, @Body() updateProductDTO: UpdateProductDTO) {
-    return await this.productService.updateProduct(Number(id), updateProductDTO);
+  @UseInterceptors(FileInterceptor('image'))
+  async updateProduct(
+    @Param('id') id: number,
+    @UploadedFile() file: Express.Multer.File,
+    @Body() updateProductDTO: UpdateProductDTO): Promise<{ data: Product }> {
+    return {
+      data: await this.productService.updateProduct(Number(id), updateProductDTO, file)
+    }
   }
 
   @Delete('/:id')
-  async deleteProduct(@Param('id') id: number) {
-    return await this.productService.deleteProduct(Number(id));
+  async deleteProduct(@Param('id') id: number): Promise<{ data: Product }> {
+    return {
+      data: await this.productService.deleteProduct(Number(id))
+    }
   }
 }

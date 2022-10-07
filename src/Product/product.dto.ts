@@ -1,4 +1,4 @@
-import {IsOptional, IsEmail, IsNotEmpty } from 'class-validator';
+import {IsOptional, IsEmail, IsNotEmpty, IsNumber } from 'class-validator';
 
 export class CreateProductDTO {
   @IsNotEmpty()
@@ -6,9 +6,6 @@ export class CreateProductDTO {
 
   @IsNotEmpty()
   categoryId: number;
-
-  @IsNotEmpty()
-  image_url: string;
 
   @IsNotEmpty()
   price: string;
@@ -27,7 +24,7 @@ export class UpdateProductDTO {
   @IsNotEmpty()
   categoryId: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   image_url: string;
 
   @IsNotEmpty()

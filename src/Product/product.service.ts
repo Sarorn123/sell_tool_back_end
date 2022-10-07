@@ -1,13 +1,17 @@
 import { Category } from './../../node_modules/.prisma/client/index.d';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {  HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Product } from '@prisma/client';
 import { PrismaService } from '../Prisma/prisma.service';
 import { CreateProductDTO, createCategoryDTO, UpdateProductDTO } from './product.dto';
-import { isNotIn } from 'class-validator';
+import { ImageUploadService } from '../ImageUpload/imageUpload.service';
+import { uuid } from 'uuidv4';
 
 @Injectable()
 export class ProductService {
-  constructor(private prisma: PrismaService) { }
+  constructor(
+    private prisma: PrismaService,
+    private imageUploadService: ImageUploadService,
+  ) { }
 
   // ====> Category <==== //
 
@@ -29,9 +33,6 @@ export class ProductService {
 
   async getAllCategory(): Promise<Category[]> {
     return this.prisma.category.findMany({
-
-
-
       include: {
         products: true,
       }
@@ -77,28 +78,41 @@ export class ProductService {
       take: totalPerPage,
     });
 
-    return allProducts;
+    const finalProducts = [];
+    allProducts.forEach(product => {
+      const image_url = this.imageUploadService.getImageUrl(product.image_url)
+      finalProducts.push({ ...product, image_url });
+    });
+
+    return finalProducts;
   }
 
   // get single product
   async getProduct(id: number): Promise<Product> {
-    return this.prisma.product.findUnique({
+    const product = await this.prisma.product.findUnique({
       where: {
         id: id,
-
       },
       include: {
         category: true,
       }
     });
+
+    if (!product) {
+      throw new HttpException("Not Product Found ", HttpStatus.BAD_REQUEST);
+    }
+
+    const image_url = this.imageUploadService.getImageUrl(product.image_url);
+    return { ...product, image_url };
+
   }
 
   // add product 
-  async addProduct(createProductDTO: CreateProductDTO): Promise<Product> {
+  async addProduct(createProductDTO: CreateProductDTO, file: Express.Multer.File): Promise<Product> {
 
     const category = await this.prisma.category.findFirst({
       where: {
-        id: createProductDTO.categoryId
+        id: Number(createProductDTO.categoryId)
       }
     });
 
@@ -117,17 +131,47 @@ export class ProductService {
       throw new HttpException(`Product Already Existed !`, HttpStatus.BAD_REQUEST);
     }
 
-    return await this.prisma.product.create({
-      data: createProductDTO
+    const validateImage = this.imageUploadService.validateImage(file);
+    if (!validateImage.accept) {
+      throw new HttpException(validateImage.message, HttpStatus.BAD_REQUEST);
+    }
+
+    // Save Image To Google Cloud 
+    const image_name = uuid();
+    const path: string = await this.imageUploadService.saveImage(
+      "productImages/" + image_name + ".jpg",
+      file.buffer,
+    );
+
+    const newCreateProductDTO = { ...createProductDTO, image_url: path, categoryId: Number(createProductDTO.categoryId) };
+    const newProduct = await this.prisma.product.create({
+      data: newCreateProductDTO,
     });
+
+    const image_url = this.imageUploadService.getImageUrl(path);
+    return { ...newProduct, image_url }
   }
 
   // update product 
-  async updateProduct(id: number, updateProductDTO: UpdateProductDTO): Promise<Product> {
+  async updateProduct(
+    id: number,
+    updateProductDTO: UpdateProductDTO,
+    file: Express.Multer.File | undefined
+  ): Promise<Product> {
+
+    const exist = await this.prisma.product.findFirst({
+      where: {
+        id: id
+      }
+    });
+
+    if (!exist) {
+      throw new HttpException(`Product Id = ${id} Not Found`, HttpStatus.BAD_REQUEST);
+    }
 
     const category = await this.prisma.category.findFirst({
       where: {
-        id: updateProductDTO.categoryId
+        id: Number(updateProductDTO.categoryId)
       }
     });
 
@@ -149,16 +193,38 @@ export class ProductService {
       throw new HttpException(`Product Already Existed !`, HttpStatus.BAD_REQUEST);
     }
 
-    return await this.prisma.product.update({
+    // If Have Image To Change 
+    if (file) {
+
+      // Validate Image
+      const validateImage = this.imageUploadService.validateImage(file);
+      if (!validateImage.accept) {
+        throw new HttpException(validateImage.message, HttpStatus.BAD_REQUEST);
+      }
+
+      // Delete Image First 
+      await this.imageUploadService.deleteImage(exist.image_url);
+      // Save Image To Google Cloud 
+      const image_name = uuid();
+      const path: string = await this.imageUploadService.saveImage(
+        "productImages/" + image_name + ".jpg",
+        file.buffer,
+      );
+      updateProductDTO = { ...updateProductDTO, image_url: path }
+    }
+    updateProductDTO = { ...updateProductDTO, categoryId: Number(updateProductDTO.categoryId) };
+    const updatedProduct = await this.prisma.product.update({
       where: {
         id: id
       },
       data: updateProductDTO
     });
+    const image_url = this.imageUploadService.getImageUrl(updatedProduct.image_url);
+    return { ...updatedProduct, image_url }
   }
 
   // delete product 
-  async deleteProduct(id: number): Promise<any> {
+  async deleteProduct(id: number): Promise<Product> {
 
     const product = await this.prisma.product.findFirst({
       where: {
@@ -170,6 +236,8 @@ export class ProductService {
       throw new HttpException("Product Not Found", HttpStatus.BAD_REQUEST);
     }
 
+    // Delete Image From Google Cloud 
+    await this.imageUploadService.deleteImage(product.image_url);
     return this.prisma.product.delete({
       where: {
         id: id,
