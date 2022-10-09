@@ -1,17 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { Storage } from "@google-cloud/storage";
+import { CloudConfig } from './cloudConfig';
 
 @Injectable()
 export class ImageUploadService {
+  
 
   private storage: Storage;
   private bucket = "";
-
   constructor() {
-    const keyFilename = "cloudKey.json";
     this.storage = new Storage({
       projectId: process.env.PROJECT_ID,
-      keyFilename
+      credentials: {
+        client_email: CloudConfig.client_email,
+        client_id: CloudConfig.client_id,
+        private_key: CloudConfig.private_key,
+      },
     });
 
     this.bucket = process.env.BUCKET;

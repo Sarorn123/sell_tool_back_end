@@ -5,6 +5,7 @@ import { PrismaService } from '../Prisma/prisma.service';
 import { CreateProductDTO, createCategoryDTO, UpdateProductDTO } from './product.dto';
 import { ImageUploadService } from '../ImageUpload/imageUpload.service';
 import { uuid } from 'uuidv4';
+import { CloudConfig } from '../ImageUpload/cloudConfig';
 
 @Injectable()
 export class ProductService {
@@ -108,7 +109,7 @@ export class ProductService {
   }
 
   // add product 
-  async addProduct(createProductDTO: CreateProductDTO, file: Express.Multer.File): Promise<Product> {
+  async addProduct(createProductDTO: CreateProductDTO, file: Express.Multer.File): Promise<any> {
 
     const category = await this.prisma.category.findFirst({
       where: {
