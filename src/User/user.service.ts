@@ -29,7 +29,8 @@ export class UserService {
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(createUserDTO.password, salt);
     createUserDTO.gender = +createUserDTO.gender;
-    createUserDTO.password = hashedPassword
+    createUserDTO.password = hashedPassword;
+    createUserDTO.role_id = +createUserDTO.role_id;
 
     return this.prisma.user.create({
       data: createUserDTO,
