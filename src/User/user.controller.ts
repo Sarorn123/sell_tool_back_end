@@ -30,5 +30,12 @@ export class UserController {
     }
   }
 
+  @Post('/addRole')
+  async addRole(@Body() name: string): Promise<any> {
+    return {
+      data: await this.userService.addRole(name)
+    }
+  }
+
 
 }
