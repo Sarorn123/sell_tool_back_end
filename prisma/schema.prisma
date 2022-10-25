@@ -7,13 +7,28 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id         Int      @id @default(autoincrement())
-  email      String
-  name       String?
-  gender     Int      @default(1)
-  address    String   @default("")
+model Role {
+  id         Int      @id @unique @default(autoincrement())
+  name       String   @unique
+  users      User[]
   created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  @@map("roles")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String
+  password     String
+  full_name    String
+  phone_number String
+  gender       Int      @default(1)
+  money        Int      @default(0)
+  role_id      Int?     @default(2)
+  role         Role?    @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @default(now()) @updatedAt
 
   @@unique([email])
   @@map("users")

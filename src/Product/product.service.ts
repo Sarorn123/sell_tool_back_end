@@ -5,7 +5,6 @@ import { PrismaService } from '../Prisma/prisma.service';
 import { CreateProductDTO, createCategoryDTO, UpdateProductDTO } from './product.dto';
 import { ImageUploadService } from '../ImageUpload/imageUpload.service';
 import { uuid } from 'uuidv4';
-import { CloudConfig } from '../ImageUpload/cloudConfig';
 
 @Injectable()
 export class ProductService {
@@ -61,7 +60,7 @@ export class ProductService {
       queryTerms = { ...queryTerms, "name": { contains: query.name } }
     }
     if (query.categoryId) {
-      queryTerms = { ...queryTerms, "categoryId": Number(query.categoryId) }
+      queryTerms = { ...queryTerms, "categoryId": +query.categoryId }
     }
     if (query.price) {
       queryTerms = { ...queryTerms, "price": query.price }
@@ -133,7 +132,7 @@ export class ProductService {
     }
 
     if (!file) {
-      throw new HttpException(`Image Is Required !`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(`image is required !`, HttpStatus.BAD_REQUEST);
     }
 
     const validateImage = this.imageUploadService.validateImage(file);

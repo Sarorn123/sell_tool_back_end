@@ -5,7 +5,6 @@ import { CloudConfig } from './cloudConfig';
 @Injectable()
 export class ImageUploadService {
   
-
   private storage: Storage;
   private bucket = "";
   constructor() {
