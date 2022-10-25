@@ -38,7 +38,9 @@ export class UserService {
 
   async addRole(name: string) {
     return this.prisma.role.create({
-      data: { name }
+      data: {
+        name
+      }
     });
   }
 

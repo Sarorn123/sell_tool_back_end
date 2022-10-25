@@ -31,9 +31,9 @@ export class UserController {
   }
 
   @Post('/addRole')
-  async addRole(@Body() name: string): Promise<any> {
+  async addRole(@Body() DTO:any): Promise<any> {
     return {
-      data: await this.userService.addRole(name)
+      data: await this.userService.addRole(DTO.name)
     }
   }
 
