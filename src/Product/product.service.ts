@@ -42,7 +42,7 @@ export class ProductService {
   // ====> End Category <==== //
 
   // get all products 
-  async getAllProducts(query: any): Promise<Product[]> {
+  async getAllProducts(query: any): Promise<any> {
 
     let pageNumber: number = 1;
     let totalPerPage: number = 10;
@@ -63,7 +63,7 @@ export class ProductService {
       queryTerms = { ...queryTerms, "categoryId": +query.categoryId }
     }
     if (query.price) {
-      queryTerms = { ...queryTerms, "price": query.price }
+      queryTerms = { ...queryTerms, "price": { contains: query.price } }
     }
 
     let allProducts = await this.prisma.product.findMany({
@@ -84,11 +84,15 @@ export class ProductService {
       finalProducts.push({ ...product, image_url });
     });
 
-    return finalProducts;
+    // pagination
+    const allPro = await this.prisma.product.count();
+    const totalPage = Math.ceil(allPro/totalPerPage);
+
+    return {finalProducts, totalPage, totalPerPage, pageNumber, allPro};
   }
 
   // get single product
-  async getProduct(id: number): Promise<Product> {
+  async getProduct(id: number): Promise<any> {
     const product = await this.prisma.product.findUnique({
       where: {
         id: id,
@@ -103,7 +107,25 @@ export class ProductService {
     }
 
     const image_url = this.imageUploadService.getImageUrl(product.image_url);
-    return { ...product, image_url };
+
+    let recommend = [];
+    for (const i in [1,2,3,4]){
+      const random = randomNumber();
+
+      const re_product = await this.prisma.product.findUnique({
+        where: {
+          id: random,
+        },
+      });
+
+      if(re_product){
+        const image_url = this.imageUploadService.getImageUrl(re_product.image_url);
+        recommend.push({...re_product,image_url});
+      }
+    }
+
+    const result = { ...product, image_url,recommend };
+    return result;
 
   }
 
@@ -263,4 +285,8 @@ export class ProductService {
     });
   }
 
+}
+
+function randomNumber(){
+  return Math.floor(Math.random() * 70) + 1
 }

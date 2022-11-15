@@ -30,10 +30,18 @@ export class ProductController {
   // ====> End Category <==== //
 
   @Get()
-  async getAllProducts(@Query() query: any): Promise<{ data: Product[] }> {
+  async getAllProducts(@Query() query: any): Promise<{ data: any,  paginate: any }> {
+
+    const {finalProducts, totalPage, totalPerPage, pageNumber, allPro} = await this.productService.getAllProducts(query); 
 
     return {
-      data: await this.productService.getAllProducts(query),
+      data: finalProducts,
+      paginate: {
+        totalPage,
+        totalPerPage,
+        pageNumber,
+        total: allPro
+      }
     }
   }
 
