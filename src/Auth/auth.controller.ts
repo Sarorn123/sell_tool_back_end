@@ -21,7 +21,6 @@ export class AuthController {
     async login(
             @Res({ passthrough: true }) res : Response,  
             @Body() req: { email: string, password: string,},
-            @Req() request: Request
         ) {
         if (!req.email || !req.password) {
             throw new HttpException("email and password is required !", HttpStatus.BAD_REQUEST);
@@ -37,7 +36,7 @@ export class AuthController {
             });
             res.cookie('role', authenticate.user.role.name , {
                 maxAge: 60*60*24*30,
-                sameSite: 'strict',
+                sameSite: 'strict', 
                 httpOnly: true,
             });
             
