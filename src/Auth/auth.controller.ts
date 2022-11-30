@@ -34,12 +34,16 @@ export class AuthController {
             res.cookie('access_token', access_token , {
                 maxAge: 60*60*24*30,
                 sameSite: 'strict',
-                secure: true,
+                httpOnly: true,
+                secure: process.env.NODE_ENV !== "development",
+                
             });
             res.cookie('role', authenticate.user.role.name , {
                 maxAge: 60*60*24*30,
                 sameSite: 'strict',
-                secure: true,
+                httpOnly: true,
+                secure: process.env.NODE_ENV !== "development",
+                
             });
             
             return authenticate.user;
