@@ -23,6 +23,7 @@ export class AuthController {
             @Body() req: { email: string, password: string,},
             @Req() request: Request
         ) {
+            console.log(req);
         if (!req.email || !req.password) {
             throw new HttpException("email and password is required !", HttpStatus.BAD_REQUEST);
         }
@@ -33,12 +34,12 @@ export class AuthController {
             res.cookie('access_token', access_token , {
                 maxAge: 60*60*24*30,
                 sameSite: 'strict',
-                httpOnly: true,
+                secure: true,
             });
             res.cookie('role', authenticate.user.role.name , {
                 maxAge: 60*60*24*30,
                 sameSite: 'strict',
-                httpOnly: true,
+                secure: true,
             });
             
             return authenticate.user;
