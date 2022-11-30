@@ -11,7 +11,7 @@ import * as cookieParser from 'cookie-parser';
 ////////////////////////////////////////////////
 
 const corsOptions ={
-  origin:'*', 
+  origin:'https://nextjs-sell-tool.vercel.app', 
   credentials:true,            //access-control-allow-credentials:true
   optionSuccessStatus:200
 }
