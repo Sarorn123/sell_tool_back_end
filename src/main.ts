@@ -3,7 +3,6 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
 
-
 ////////////////////////////////////////////////
 ////////////////////////////////////////////////
 ////////////// Ry Sarorn Sell Tool Api /////////
@@ -11,9 +10,10 @@ import * as cookieParser from 'cookie-parser';
 ////////////////////////////////////////////////
 
 const corsOptions ={
-  origin:'https://nextjs-sell-tool.vercel.app', 
+  // origin:process.env.FRONT_END_URL, 
+  origin: "http://localhost:3000", 
   credentials:true,            //access-control-allow-credentials:true
-  optionSuccessStatus:200
+  optionSuccessStatus:200,
 }
 
 async function initApp() {

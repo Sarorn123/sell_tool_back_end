@@ -23,7 +23,7 @@ export class AuthController {
             @Body() req: { email: string, password: string,},
             @Req() request: Request
         ) {
-            console.log(req);
+           
         if (!req.email || !req.password) {
             throw new HttpException("email and password is required !", HttpStatus.BAD_REQUEST);
         }
@@ -31,6 +31,7 @@ export class AuthController {
         const authenticate = await this.authService.validateUser(req.email, req.password);
         const access_token = authenticate.access_token;
         try {
+            console.log(authenticate.user);
             res.cookie('access_token', access_token , {
                 maxAge: 60*60*24*30,
                 sameSite: 'none',
