@@ -36,14 +36,14 @@ export class AuthController {
                 maxAge: 60*60*24*30,
                 sameSite: 'none',
                 httpOnly: true,
-                secure: true,
+                secure: false,
                 
             });
             res.cookie('role', authenticate.user.role.name , {
                 maxAge: 60*60*24*30,
                 sameSite: 'none',
                 httpOnly: true,
-                secure: true,
+                secure: false,
                 
             });
             
