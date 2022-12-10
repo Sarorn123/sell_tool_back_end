@@ -10,8 +10,8 @@ import * as cookieParser from 'cookie-parser';
 ////////////////////////////////////////////////
 
 const corsOptions ={
-  // origin:process.env.FRONT_END_URL, 
-  origin: "http://localhost:3000", 
+  origin:process.env.FRONT_END_URL, 
+  // origin: "http://localhost:3000", 
   credentials:true,            //access-control-allow-credentials:true
   optionSuccessStatus:200,
 }
