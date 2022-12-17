@@ -46,7 +46,7 @@ export class UserService {
     const users = [];
     userQuery.forEach(user => {
       let image_url = "";
-      if(user.image_url){
+      if (user.image_url) {
         image_url = this.imageUploadService.getImageUrl(user.image_url)
       }
       users.push({ ...user, image_url });
@@ -118,7 +118,7 @@ export class UserService {
     });
 
     if (user) {
-      if(user.image_url) user.image_url = this.imageUploadService.getImageUrl(user.image_url);
+      if (user.image_url) user.image_url = this.imageUploadService.getImageUrl(user.image_url);
       return user;
     } else {
       throw new BadRequestException("User Not Founded");

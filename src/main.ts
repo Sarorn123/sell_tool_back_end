@@ -9,21 +9,21 @@ import * as cookieParser from 'cookie-parser';
 ////////////////////////////////////////////////
 ////////////////////////////////////////////////
 
-const corsOptions ={
-  origin:process.env.FRONT_END_URL, 
+const corsOptions = {
+  origin: process.env.FRONT_END_URL,
   // origin: "http://localhost:3000", 
-  credentials:true,            //access-control-allow-credentials:true
-  optionSuccessStatus:200,
+  credentials: true,            //access-control-allow-credentials:true
+  optionSuccessStatus: 200,
 }
 
 async function initApp() {
   const app = await NestFactory.create(AppModule);
   app.use(cookieParser());
   app.enableCors(corsOptions);
-  app.setGlobalPrefix("/api/v1")
+  app.setGlobalPrefix("/api/v1");
   app.useGlobalPipes(new ValidationPipe());
-  await app.listen(process.env.PORT || 5000, () =>{
-    console.log("Server Is Running On Port = "+process.env.PORT)
+  await app.listen(process.env.PORT || 5000, () => {
+    console.log("Server Is Running On Port = " + process.env.PORT);
   });
   // await app.listen(process.env.PORT);
 }

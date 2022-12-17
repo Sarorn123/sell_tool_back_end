@@ -35,7 +35,7 @@ export class AuthService {
                 throw new UnauthorizedException("Password Not Correct");
             }
         }
-        throw new HttpException("User Not Found !", HttpStatus.BAD_REQUEST);
+        throw new HttpException("Invalid Credentail !", HttpStatus.BAD_REQUEST);
     }
 
     async getAccessToken(user: any) {

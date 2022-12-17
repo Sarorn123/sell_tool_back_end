@@ -19,11 +19,11 @@ export class AuthController {
 
     @Post('login')
     async login(
-            @Res({ passthrough: true }) res : Response,  
-            @Body() req: { email: string, password: string,},
-            @Req() request: Request
-        ) {
-           
+        @Res({ passthrough: true }) res: Response,
+        @Body() req: { email: string, password: string, },
+        @Req() request: Request,
+    ) {
+
         if (!req.email || !req.password) {
             throw new HttpException("email and password is required !", HttpStatus.BAD_REQUEST);
         }
@@ -31,24 +31,23 @@ export class AuthController {
         const authenticate = await this.authService.validateUser(req.email, req.password);
         const access_token = authenticate.access_token;
         try {
-            console.log(authenticate.user);
-            res.cookie('access_token', access_token , {
-                maxAge: 60*60*24*30,
+            res.cookie('access_token', access_token, {
+                maxAge: 60 * 60 * 24 * 30,
                 sameSite: 'none',
                 httpOnly: true,
-                secure: false,
-                
+                secure: true,
+
             });
-            res.cookie('role', authenticate.user.role.name , {
-                maxAge: 60*60*24*30,
+            res.cookie('role', authenticate.user.role.name, {
+                maxAge: 60 * 60 * 24 * 30,
                 sameSite: 'none',
                 httpOnly: true,
-                secure: false,
-                
+                secure: true,
+
             });
-            
+
             return authenticate.user;
-            
+
         } catch (error) {
             return res.send(error);
         }
@@ -57,25 +56,25 @@ export class AuthController {
     @Post('logout')
     @UseGuards(JwtAuthGuard)
     async logout(
-            @Res({ passthrough: true }) res : Response,  
-            @Req() request: Request
-        ) {
+        @Res({ passthrough: true }) res: Response,
+        @Req() request: Request
+    ) {
 
         try {
-            res.cookie('access_token', null , {
+            res.cookie('access_token', null, {
                 maxAge: -1,
                 sameSite: 'strict',
                 httpOnly: true,
             });
 
-            res.cookie('role', null , {
+            res.cookie('role', null, {
                 maxAge: -1,
                 sameSite: 'strict',
                 httpOnly: true,
             });
-            
-            return {message: "Logged Out"};
-            
+
+            return { message: "Logged Out" };
+
         } catch (error) {
             return res.send(error);
         }
@@ -84,17 +83,17 @@ export class AuthController {
     @Post('signUp')
     @UseInterceptors(FileInterceptor('image'))
     async signUp(
-        @Body() req :CreateUserDTO,
+        @Body() req: CreateUserDTO,
         @UploadedFile() file: Express.Multer.File,
     ): Promise<User> {
-       return await this.userService.addUser(req, file);
+        return await this.userService.addUser(req, file);
     }
 
     @Post('getUserByToken')
     @UseGuards(JwtAuthGuard)
     async getUserByToken(
         @getUserLoggedIn() user: any
-        ): Promise<any> {
+    ): Promise<any> {
         return this.authService.getSingleUser(user.userId);
     }
 }
